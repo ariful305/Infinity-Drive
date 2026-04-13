@@ -400,67 +400,192 @@ void fluffyCloud(float x, float y, float s)
   fc(x + s * 0.1f, y + s * 0.52f, s * 0.32f);
 }
 
+/* Curved গ্রামের মাটির রাস্তা — follows gentle sine (camera-independent) */
+static float villageRoadY(float x)
+{
+  return 222.0f + sinf(x * 0.0045f + T * 0.014f) * 13.0f + sinf(x * 0.0018f) * 4.0f;
+}
+
+static void villageDirtRoad(void)
+{
+  float halfW = 52.0f;
+  glBegin(GL_QUAD_STRIP);
+  for (float x = 0; x <= W; x += 3.0f)
+  {
+    float cy = villageRoadY(x);
+    float u = x / W;
+    float r = 0.34f + u * 0.06f, g = 0.24f + u * 0.05f, b = 0.11f + u * 0.03f;
+    float sh = 0.78f + 0.22f * sinf(x * 0.02f);
+    col3(r * sh * 0.65f, g * sh * 0.65f, b * sh * 0.65f);
+    glVertex2f(x, cy - halfW * 0.55f);
+    col3(r * sh, g * sh, b * sh);
+    glVertex2f(x, cy + halfW * 0.45f);
+  }
+  glEnd();
+  /* wheel ruts */
+  col3(0.22f, 0.15f, 0.07f);
+  for (float x = 6; x < W; x += 5)
+  {
+    float cy = villageRoadY(x);
+    dda(x, cy - 4, x + 3, cy + 2);
+    dda(x + 18, cy - 2, x + 22, cy + 4);
+  }
+}
+
+/* Zigzag wooden fence — alternating post height for depth */
+static void zigzagFence(float x0, float y0, float len, int posts)
+{
+  if (posts < 2)
+    return;
+  float step = len / (float)(posts - 1);
+  for (int i = 0; i < posts; i++)
+  {
+    float px = x0 + i * step;
+    float py = y0 + ((i & 1) ? 9.0f : -9.0f);
+    col3(0.40f, 0.26f, 0.10f);
+    fillRect(px - 2.5f, py - 2, 5, 24);
+    col3(0.52f, 0.36f, 0.15f);
+    glBegin(GL_TRIANGLES);
+    glVertex2f(px - 3, py + 20);
+    glVertex2f(px + 3, py + 20);
+    glVertex2f(px, py + 26);
+    glEnd();
+    if (i < posts - 1)
+    {
+      float px2 = x0 + (i + 1) * step;
+      float py2 = y0 + (((i + 1) & 1) ? 9.0f : -9.0f);
+      col3(0.44f, 0.30f, 0.12f);
+      glLineWidth(2.5f);
+      glBegin(GL_LINES);
+      glVertex2f(px, py + 14);
+      glVertex2f(px2, py2 + 14);
+      glVertex2f(px, py + 6);
+      glVertex2f(px2, py2 + 6);
+      glEnd();
+      glLineWidth(1.0f);
+    }
+  }
+}
+
+static void scene3WindLeavesDust(void)
+{
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  for (int i = 0; i < 55; i++)
+  {
+    float px = fmodf(i * 127.0f + T * 26.0f + sinf(i * 1.1f) * 40.0f, W + 80) - 40;
+    float py = 40 + fmodf(i * 93.0f + T * 11.0f, (float)H * 0.55f);
+    float a = 0.08f + 0.06f * sinf(T * 1.7f + i);
+    glColor4f(0.85f, 0.78f, 0.45f, a);
+    fc(px, py, 1.2f + (i & 3) * 0.4f);
+  }
+  for (int i = 0; i < 35; i++)
+  {
+    float px = fmodf(i * 211.0f - T * 18.0f, W + 60) - 30;
+    float py = 80 + (i % 7) * 31.0f + sinf(T * 0.9f + i) * 12.0f;
+    glColor4f(0.72f, 0.62f, 0.48f, 0.10f);
+    fc(px, py, 0.9f);
+  }
+  glDisable(GL_BLEND);
+}
+
+static void scene3FilmGrade(void)
+{
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glColor4f(1.0f, 0.78f, 0.48f, 0.055f);
+  fillRect(0, 0, W, H);
+  glColor4f(0.15f, 0.22f, 0.42f, 0.045f);
+  fillRect(0, H * 0.55f, W, H * 0.45f);
+  glDisable(GL_BLEND);
+}
+
 void scene3()
 {
-  /* ── Warm afternoon sky ── */
-  Stop sky3[] = {{0.0f, 0.42f, 0.72f, 0.96f}, {0.55f, 0.65f, 0.85f, 0.98f}, {0.78f, 0.82f, 0.92f, 1.0f}, {1.0f, 0.90f, 0.95f, 1.0f}};
-  skyGrad(sky3, 4);
-
-  /* sun */
-  glow(680, 560, 30, 90, 1.0f, 0.92f, 0.45f);
-  col3(1.0f, 0.97f, 0.72f);
-  fc(680, 560, 26);
-
-  /* clouds */
-  fluffyCloud(90, 510, 24);
-  fluffyCloud(340, 535, 19);
-  fluffyCloud(580, 518, 21);
-  fluffyCloud(210, 548, 15);
-
-  /* ── Rich grass ── */
-  for (float yy = 0; yy < 225; yy += 0.5f)
+  glPushMatrix();
   {
-    float t = yy / 225.0f;
-    col3(lp(0.12f, 0.20f, t), lp(0.45f, 0.58f, t), lp(0.10f, 0.14f, t));
-    dda(0, yy, W, yy);
-  }
-  /* grass blade texture */
-  col3(0.16f, 0.52f, 0.13f);
-  for (int i = 0; i < 80; i++)
-  {
-    float gx = i * 10.5f + sinf(i * 3.1f) * 4, gy = 225 + sinf(i * 2.7f) * 18;
-    dda(gx, gy, gx + 2, gy + 9);
-    dda(gx + 4, gy + 1, gx + 2, gy + 10);
-  }
-  /* flower meadow */
-  for (int i = 0; i < 30; i++)
-  {
-    float fx = 15 + i * 27.0f, fy = 222 + sinf(i * 1.8f) * 20;
-    col3(1.0f, 0.90f, 0.12f);
-    fc(fx, fy, 3);
-    col3(0.98f, 0.38f, 0.62f);
-    fc(fx + 14, fy + 7, 2.5f);
-    col3(0.75f, 0.35f, 0.90f);
-    fc(fx + 28, fy + 3, 2.5f);
-    /* stem */
-    col3(0.18f, 0.55f, 0.14f);
-    dda(fx, fy - 3, fx, fy - 9);
-  }
+    float camPan = sinf(T * 0.082f) * (W * 0.038f);
+    float camBob = sinf(T * 0.056f) * 5.5f;
+    float z = 1.0f + sinf(T * 0.031f) * 0.012f;
+    glTranslatef(W * 0.5f + camPan, H * 0.5f + camBob, 0);
+    glScalef(z, z, 1.0f);
+    glTranslatef(-W * 0.5f, -H * 0.5f, 0);
 
-  cobblePath(340, 0, 125, 228);
+    /* ── Golden-hour village sky ── */
+    Stop sky3[] = {{0.0f, 0.35f, 0.58f, 0.92f}, {0.38f, 0.58f, 0.72f, 0.96f}, {0.62f, 0.72f, 0.82f, 0.98f}, {0.82f, 0.88f, 0.90f, 1.0f}, {1.0f, 0.92f, 0.94f, 1.0f}};
+    skyGrad(sky3, 5);
 
-  /* 5 cottages */
-  initSmoke();
-  cottage3(12, 222, 105, 94, 0.78f, 0.72f, 0.62f, 0.62f, 0.18f, 0.12f, 82);
-  cottage3(136, 222, 118, 104, 0.68f, 0.74f, 0.62f, 0.22f, 0.45f, 0.20f, 218);
-  cottage3(278, 222, 94, 88, 0.74f, 0.70f, 0.58f, 0.55f, 0.30f, 0.14f, 326);
-  cottage3(508, 222, 110, 100, 0.76f, 0.70f, 0.60f, 0.50f, 0.20f, 0.16f, 568);
-  cottage3(638, 222, 100, 92, 0.70f, 0.74f, 0.64f, 0.26f, 0.42f, 0.22f, 696);
+    glow(680, 560, 28, 95, 1.0f, 0.88f, 0.42f);
+    col3(1.0f, 0.95f, 0.68f);
+    fc(680, 560, 24);
 
-  realTree(462, 222, 86);
-  realTree(480, 222, 98);
-  realFence(8, 222, 625);
-  stoneWell3(402, 222);
-  windmill3(735, 222, c3m);
-  drawPerson(c3p, 226, 0.52f, 0.28f, 0.12f);
+    fluffyCloud(90 + sinf(T * 0.04f) * 8, 510, 24);
+    fluffyCloud(340, 535, 19);
+    fluffyCloud(580 - cosf(T * 0.035f) * 10, 518, 21);
+    fluffyCloud(210, 548, 15);
+
+    /* distant haze */
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    for (float yy = 300; yy < 360; yy += 2)
+    {
+      float a = (1.0f - fabsf(yy - 330) / 30.0f) * 0.18f;
+      glColor4f(0.75f, 0.82f, 0.92f, a);
+      dda(0, yy, W, yy);
+    }
+    glDisable(GL_BLEND);
+
+    /* meadow */
+    for (float yy = 0; yy < 225; yy += 0.5f)
+    {
+      float t = yy / 225.0f;
+      float dp = 1.0f - yy / 380.0f;
+      col3(lp(0.10f, 0.22f, t) * dp, lp(0.42f, 0.58f, t) * dp, lp(0.08f, 0.16f, t) * dp);
+      dda(0, yy, W, yy);
+    }
+    col3(0.14f, 0.48f, 0.11f);
+    for (int i = 0; i < 120; i++)
+    {
+      float gx = i * 7.2f + sinf(i * 2.9f + T * 0.8f) * 5.0f;
+      float gy = 218 + sinf(i * 2.1f + T * 1.1f) * 16.0f;
+      dda(gx, gy, gx + 1.5f, gy + 7 + sinf(T + i) * 2.0f);
+    }
+    for (int i = 0; i < 36; i++)
+    {
+      float fx = 12 + i * 22.0f, fy = 218 + sinf(i * 1.7f) * 22.0f;
+      col3(0.95f, 0.82f, 0.18f);
+      fc(fx, fy, 2.5f);
+      col3(0.18f, 0.50f, 0.12f);
+      dda(fx, fy - 2, fx, fy - 8);
+    }
+
+    villageDirtRoad();
+
+    zigzagFence(10, 228, W * 0.38f, 22);
+    zigzagFence(W * 0.58f, 230, W * 0.40f, 22);
+
+    initSmoke();
+    cottage3(12, 222, 105, 94, 0.78f, 0.72f, 0.62f, 0.62f, 0.18f, 0.12f, 82);
+    cottage3(136, 222, 118, 104, 0.68f, 0.74f, 0.62f, 0.22f, 0.45f, 0.20f, 218);
+    cottage3(278, 222, 94, 88, 0.74f, 0.70f, 0.58f, 0.55f, 0.30f, 0.14f, 326);
+    cottage3(508, 222, 110, 100, 0.76f, 0.70f, 0.60f, 0.50f, 0.20f, 0.16f, 568);
+    cottage3(638, 222, 100, 92, 0.70f, 0.74f, 0.64f, 0.26f, 0.42f, 0.22f, 696);
+
+    realTree(120, 222, 72);
+    realTree(250, 222, 68);
+    realTree(462, 222, 86);
+    realTree(480, 222, 98);
+    realTree(600, 222, 74);
+    stoneWell3(402, 222);
+    windmill3(735, 222, c3m);
+
+    float roadYcar = villageRoadY(c3carX);
+    realCar(c3carX, roadYcar - 4.0f, 0.42f, 0.20f, 0.11f, 1);
+
+    drawPerson(c3p, 226 + sinf(T * 0.9f) * 2.0f, 0.50f, 0.26f, 0.11f);
+
+    scene3WindLeavesDust();
+    scene3FilmGrade();
+  }
+  glPopMatrix();
 }

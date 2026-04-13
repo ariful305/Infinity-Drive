@@ -10,7 +10,7 @@ float T = 0.0f;
 
 float c1a = 80, c1b = 720, c1p = 60;
 float c2p = 400, c2sx = -80, c2sy = 95;
-float c3m = 0, c3p = 55;
+float c3m = 0, c3p = 55, c3carX = -120;
 float c4p = 55, c4sw = 0;
 float bx[3] = {90, 330, 570}, by2[3] = {490, 505, 495};
 float c5w = 0, c5b1 = 170, c5b2 = 560, c5p = 55, c5beam = 0;

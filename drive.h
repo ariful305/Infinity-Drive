@@ -25,7 +25,7 @@ extern float sceneTimer, SCENE_DUR;
 extern float fadeA;
 extern int fadIn, fadOut;
 extern float T;
-extern float c1a, c1b, c1p, c2p, c2sx, c2sy, c3m, c3p, c4p, c4sw;
+extern float c1a, c1b, c1p, c2p, c2sx, c2sy, c3m, c3p, c3carX, c4p, c4sw;
 extern float bx[3], by2[3];
 extern float c5w, c5b1, c5b2, c5p, c5beam;
 extern float stX[120], stY[120], stS[120], stTw[120];
@@ -46,6 +46,7 @@ void fillRect(float x, float y, float w, float h);
 void drawStars(float brightness);
 void drawMoon(float x, float y, float skyr, float skyg, float skyb);
 void drawPerson(float x, float y, float shR, float shG, float shB);
+void realCar(float x, float y, float br, float bg, float bb, int dir);
 
 void scene1(void);
 void scene2(void);

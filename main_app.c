@@ -165,6 +165,9 @@ void timerCB(int v)
   c3p += 0.42f;
   if (c3p > W + 30)
     c3p = -30;
+  c3carX += 1.15f;
+  if (c3carX > W + 120)
+    c3carX = -140;
   /* scene 4 */
   c4sw += 0.044f;
   c4p += 0.42f;
@@ -229,7 +232,7 @@ int main(int argc, char **argv)
 {
   glutInit(&argc, argv);
   glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
-  glutInitWindowSize(800, 600);
+  glutInitWindowSize(1920, 1080);
   glutCreateWindow("The Infinite Drive — Photorealistic Edition");
   glClearColor(0, 0, 0, 1);
   glPointSize(1.5f);
