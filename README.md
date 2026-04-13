@@ -219,9 +219,8 @@ Please keep all rendering within the DDA / MCA primitive constraint — that is 
 
 ## 📄 License
 
-Not specified in the project files.
-
-A permissive license such as the **MIT License** is recommended for an educational/demo project of this nature.
+This project is licensed under the MIT License.
+See the LICENSE file for details.
 
 ---
 
