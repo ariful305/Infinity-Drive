@@ -505,12 +505,12 @@ static void pond(float cx, float cy, float rx, float ry)
     dda(cx - hw, cy + y, cx + hw, cy + y);
   }
   /* ripples + surface shimmer (waves) */
-  col3(0.75f, 0.90f, 0.95f);
-  for (int i = 0; i < 7; i++)
-  {
-    float r = 10 + i * 9 + fmodf(T * 10.0f, 9.0f);
-    mca(cx + 10, cy - 5, r);
-  }
+  // col3(0.75f, 0.90f, 0.95f);
+  // for (int i = 0; i < 7; i++)
+  // {
+  //   float r = 10 + i * 9 + fmodf(T * 10.0f, 9.0f);
+  //   mca(cx + 10, cy - 5, r);
+  // }
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   for (int i = 0; i < 10; i++)
