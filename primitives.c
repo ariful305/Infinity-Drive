@@ -197,25 +197,62 @@ void drawMoon(float x, float y, float skyr, float skyg, float skyb)
 /* ── Realistic stick person with shadow ────────────────────────── */
 void drawPerson(float x, float y, float shR, float shG, float shB)
 {
-  float sw = sinf(T * 4.2f) * 9.0f;
-  col3(0, 0, 0);
+  /* keep the same anchor (x,y) but draw with more volume + shading */
+  float sw = sinf(T * 4.2f) * 6.5f;
+
+  /* ground contact shadow */
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  glColor4f(0, 0, 0, 0.28f);
-  for (float r = 0; r < 12; r += 0.5f)
+  for (float r = 2; r <= 13; r += 0.5f)
+  {
+    float a = (13 - r) / 13.0f * 0.18f;
+    glColor4f(0, 0, 0, a);
     mca(x, y - 14, r);
+  }
   glDisable(GL_BLEND);
-  col3(shR, shG, shB);
-  dda(x, y + 20, x, y + 2);
-  dda(x, y + 15, x - 10, y + 5 + sw);
-  dda(x, y + 15, x + 10, y + 5 - sw);
-  dda(x, y + 2, x - 8, y - 14 + sw * 0.4f);
-  dda(x, y + 2, x + 8, y - 14 - sw * 0.4f);
-  col3(0.88f, 0.70f, 0.52f);
-  fc(x, y + 27, 7);
-  col3(0.15f, 0.09f, 0.04f);
+
+  /* legs (slight thickness) */
+  col3(shR * 0.80f, shG * 0.80f, shB * 0.80f);
+  dda(x - 1, y + 2, x - 9, y - 14 + sw * 0.35f);
+  dda(x + 1, y + 2, x + 9, y - 14 - sw * 0.35f);
+  col3(shR * 0.60f, shG * 0.60f, shB * 0.60f);
+  dda(x, y + 2, x - 8, y - 14 + sw * 0.35f);
+  dda(x, y + 2, x + 8, y - 14 - sw * 0.35f);
+
+  /* torso */
+  for (float yy = y + 2; yy <= y + 22; yy += 0.5f)
+  {
+    float t = (yy - (y + 2)) / 20.0f;
+    float hw = 3.5f - t * 1.2f;
+    float sh = 0.70f + 0.30f * t;
+    col3(shR * sh, shG * sh, shB * sh);
+    dda(x - hw, yy, x + hw, yy);
+  }
+  col3(shR * 0.55f, shG * 0.55f, shB * 0.55f);
+  dda(x - 3, y + 14, x + 3, y + 14); /* subtle waist crease */
+
+  /* arms */
+  col3(shR * 0.78f, shG * 0.78f, shB * 0.78f);
+  dda(x - 2, y + 18, x - 11, y + 7 + sw);
+  dda(x + 2, y + 18, x + 11, y + 7 - sw);
+  col3(shR * 0.62f, shG * 0.62f, shB * 0.62f);
+  dda(x - 1, y + 18, x - 10, y + 7 + sw);
+  dda(x + 1, y + 18, x + 10, y + 7 - sw);
+
+  /* head (skin gradient + hair) */
+  for (float r = 6.5f; r >= 0.5f; r -= 0.5f)
+  {
+    float t = (6.5f - r) / 6.5f;
+    col3(lp(0.86f, 0.96f, t), lp(0.66f, 0.78f, t), lp(0.48f, 0.60f, t));
+    mca(x, y + 27, r);
+  }
+  col3(0.14f, 0.09f, 0.05f);
   fc(x, y + 33, 5);
-  col3(0.12f, 0.08f, 0.05f);
-  fc(x - 2.5f, y + 28, 1.2f);
-  fc(x + 2.5f, y + 28, 1.2f);
+
+  /* face hints */
+  col3(0.10f, 0.08f, 0.07f);
+  fc(x - 2.2f, y + 28, 1.0f);
+  fc(x + 2.2f, y + 28, 1.0f);
+  col3(0.55f, 0.25f, 0.22f);
+  dda(x - 1.2f, y + 25.5f, x + 1.2f, y + 25.5f);
 }

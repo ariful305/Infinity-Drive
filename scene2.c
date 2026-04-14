@@ -155,39 +155,6 @@ void scene2()
   }
   glDisable(GL_BLEND);
 
-  /* ── Road ── */
-  /* grassy verge with colour perspective */
-  for (float yy = 0; yy < 330; yy += 0.5f)
-  {
-    float fd = cl(yy / 330.0f); /* distance fade */
-    float rl = 400 - 34 * fd * 6.5f, rrv = 400 + 34 * fd * 6.5f;
-    col3(lp(fogr, 0.12f, fd * 0.7f), lp(fogg, 0.42f, fd * 0.7f), lp(fogb, 0.14f, fd * 0.7f));
-    if (rl > 0)
-      dda(0, yy, rl, yy);
-    if (rrv < W)
-      dda(rrv, yy, W, yy);
-  }
-  /* asphalt */
-  for (float yy = 0; yy < 330; yy += 0.5f)
-  {
-    float fd = cl(yy / 330.0f);
-    float rl = 400 - 34 * fd * 6.5f, rrv = 400 + 34 * fd * 6.5f;
-    col3(lp(fogr * 0.9f, 0.14f, fd), lp(fogg * 0.9f, 0.14f, fd), lp(fogb * 0.9f, 0.16f, fd));
-    if (rrv - rl > 0)
-      dda(rl, yy, rrv, yy);
-  }
-  /* road edge marks */
-  col3(0.82f, 0.78f, 0.62f);
-  dda(0, 0, 366, 326);
-  dda(W, 0, 434, 326);
-  /* centre line perspective dashes */
-  col3(0.88f, 0.82f, 0.28f);
-  for (int i = 0; i < 8; i++)
-  {
-    float t1 = i / 8.0f, t2 = (i + 0.42f) / 8.0f;
-    dda(400 * (1 - t1 * 6.5f / 6.5f) + 0, 326 * t1, 400 * (1 - t2 * 6.5f / 6.5f) + 0, 326 * t2);
-  }
-
   /* 8 pine trees with atmospheric depth */
   float txL[] = {50, 115, 188, 262}, txR[] = {572, 645, 718, 785};
   for (int i = 0; i < 4; i++)
@@ -207,5 +174,34 @@ void scene2()
     dda(gx - 3, gy, gx, gy + 7);
   }
 
-  drawPerson(c2p, 108, 0.52f, 0.24f, 0.12f);
+  /* ── Canonical foreground (match Scene 1 placement exactly) ── */
+  for (float yy = 0; yy < 222; yy += 0.5f)
+  {
+    float t = yy / 222.0f;
+    col3(0.11f + t * 0.03f, 0.11f + t * 0.03f, 0.15f + t * 0.04f);
+    dda(0, yy, W, yy);
+  }
+  for (float yy = 55; yy < 168; yy += 0.5f)
+  {
+    float t = (yy - 55) / 113.0f;
+    col3(0.14f + t * 0.02f, 0.14f + t * 0.02f, 0.18f + t * 0.02f);
+    dda(0, yy, W, yy);
+  }
+  col3(0.48f, 0.48f, 0.52f);
+  dda(0, 55, W, 55);
+  dda(0, 167, W, 167);
+  col3(0.60f, 0.60f, 0.65f);
+  dda(0, 56, W, 56);
+  dda(0, 168, W, 168);
+  for (int i = 0; i < 14; i++)
+  {
+    float dx = i * 60.0f;
+    glow(dx + 18, 111, 0, 12, 0.75f, 0.65f, 0.0f);
+    col3(0.78f, 0.68f, 0.02f);
+    dda(dx, 111, dx + 36, 111);
+  }
+  srand(7);
+  realCar(c1a, 72, 0.72f, 0.08f, 0.12f, 1);
+  realCar(c1b, 118, 0.08f, 0.38f, 0.78f, -1);
+  drawPerson(c1p, 182, 0.18f, 0.20f, 0.60f);
 }

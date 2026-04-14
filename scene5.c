@@ -294,5 +294,35 @@ void scene5()
   realisticLighthouse(688, 252);
   realisticBoat(c5b1, 152, 0.50f, 0.28f, 0.12f, 1);
   realisticBoat(c5b2, 160, 0.14f, 0.28f, 0.55f, -1);
-  drawPerson(c5p, 248, 0.48f, 0.16f, 0.36f);
+
+  /* ── Canonical foreground (match Scene 1 placement exactly) ── */
+  for (float yy = 0; yy < 222; yy += 0.5f)
+  {
+    float t = yy / 222.0f;
+    col3(0.11f + t * 0.03f, 0.11f + t * 0.03f, 0.15f + t * 0.04f);
+    dda(0, yy, W, yy);
+  }
+  for (float yy = 55; yy < 168; yy += 0.5f)
+  {
+    float t = (yy - 55) / 113.0f;
+    col3(0.14f + t * 0.02f, 0.14f + t * 0.02f, 0.18f + t * 0.02f);
+    dda(0, yy, W, yy);
+  }
+  col3(0.48f, 0.48f, 0.52f);
+  dda(0, 55, W, 55);
+  dda(0, 167, W, 167);
+  col3(0.60f, 0.60f, 0.65f);
+  dda(0, 56, W, 56);
+  dda(0, 168, W, 168);
+  for (int i = 0; i < 14; i++)
+  {
+    float dx = i * 60.0f;
+    glow(dx + 18, 111, 0, 12, 0.75f, 0.65f, 0.0f);
+    col3(0.78f, 0.68f, 0.02f);
+    dda(dx, 111, dx + 36, 111);
+  }
+  srand(7);
+  realCar(c1a, 72, 0.72f, 0.08f, 0.12f, 1);
+  realCar(c1b, 118, 0.08f, 0.38f, 0.78f, -1);
+  drawPerson(c1p, 182, 0.18f, 0.20f, 0.60f);
 }

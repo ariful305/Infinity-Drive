@@ -402,15 +402,7 @@ void fluffyCloud(float x, float y, float s)
 
 void scene3()
 {
-  /* 1. Car Movement Logic */
-  // The car moves from left to right. Speed 120.0f makes it feel steady.
-  float carX = (T * 120.0f);
-
-  // This makes the car wrap back to the left side once it leaves the screen
-  // (W + 200) ensures it fully disappears before reappearing
-  carX = fmodf(carX, W + 200.0f) - 100.0f;
-
-  /* 2. Sky & Atmosphere (Static) */
+  /* Sky & Atmosphere (Static) */
   Stop sky3[] = {{0.0f, 0.42f, 0.72f, 0.96f}, {0.55f, 0.65f, 0.85f, 0.98f}, {1.0f, 0.90f, 0.95f, 1.0f}};
   skyGrad(sky3, 3);
 
@@ -419,7 +411,7 @@ void scene3()
   fluffyCloud(90, 510, 24);
   fluffyCloud(340, 535, 19);
 
-  /* 3. Background Scenery (Static) */
+  /* Background Scenery (Static) */
   for (float yy = 0; yy < 225; yy += 0.5f) {
     float t = yy / 225.0f;
     col3(lp(0.12f, 0.20f, t), lp(0.45f, 0.58f, t), lp(0.10f, 0.14f, t));
@@ -437,17 +429,36 @@ void scene3()
   cottage3(600, 222, 100, 92, 0.70f, 0.74f, 0.64f, 0.26f, 0.42f, 0.22f, 660);
   windmill3(750, 222, T * 40.0f);
 
-  /* 4. Road (Static) */
-  col3(0.30f, 0.28f, 0.25f);
-  fillRect(0, 0, W, 222);
-
-  // Center lane markings (Static cobblestones)
-  col3(0.40f, 0.38f, 0.35f);
-  for (int i = 0; i < W; i += 100) {
-    fillRect(i + 20, 108, 40, 6);
+  /* Road (match Scene 1 geometry: same extents + markings) */
+  /* base asphalt */
+  for (float yy = 0; yy < 222; yy += 0.5f)
+  {
+    float t = yy / 222.0f;
+    col3(0.20f + t * 0.03f, 0.19f + t * 0.03f, 0.17f + t * 0.03f);
+    dda(0, yy, W, yy);
+  }
+  /* road lane band */
+  for (float yy = 55; yy < 168; yy += 0.5f)
+  {
+    float t = (yy - 55) / 113.0f;
+    col3(0.24f + t * 0.02f, 0.23f + t * 0.02f, 0.21f + t * 0.02f);
+    dda(0, yy, W, yy);
+  }
+  /* kerb lines */
+  col3(0.58f, 0.56f, 0.52f);
+  dda(0, 55, W, 55);
+  dda(0, 167, W, 167);
+  /* centre lane dashes (aligned with Scene 1) */
+  col3(0.88f, 0.82f, 0.28f);
+  for (int i = 0; i < 14; i++)
+  {
+    float dx = i * 60.0f;
+    dda(dx, 111, dx + 36, 111);
   }
 
-  /* 5. Draw the Moving Car */
-  // carX is the only thing changing over time here
-  drawCar(carX, 72);
+  /* Canonical cars + person (match Scene 1 placement exactly) */
+  srand(7);
+  realCar(c1a, 72, 0.72f, 0.08f, 0.12f, 1);
+  realCar(c1b, 118, 0.08f, 0.38f, 0.78f, -1);
+  drawPerson(c1p, 182, 0.18f, 0.20f, 0.60f);
 }
