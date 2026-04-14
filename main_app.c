@@ -219,12 +219,25 @@ void keyboard(unsigned char key, int x, int y)
 }
 void reshape(int w, int h)
 {
-  W = w;
-  H = h;
-  glViewport(0, 0, w, h);
+  /* Render into a fixed virtual canvas so fullscreen doesn't "stick left".
+     Most scene art is authored around 800x600 coordinates. We keep that
+     coordinate system and letterbox/pillarbox the viewport to preserve
+     aspect ratio while centering the picture. */
+  const int VW = 800, VH = 600;
+  W = VW;
+  H = VH;
+
+  float sx = (float)w / (float)VW;
+  float sy = (float)h / (float)VH;
+  float s = (sx < sy) ? sx : sy;
+  int vpw = (int)(VW * s);
+  int vph = (int)(VH * s);
+  int vpx = (w - vpw) / 2;
+  int vpy = (h - vph) / 2;
+  glViewport(vpx, vpy, vpw, vph);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  gluOrtho2D(0, w, 0, h);
+  gluOrtho2D(0, VW, 0, VH);
   glMatrixMode(GL_MODELVIEW);
 }
 

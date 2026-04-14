@@ -100,17 +100,35 @@ void drawCinematicCorn(float x, float y, float h, float sw, float perspective)
   float shine = 1.0f + 0.3f * sinf(time_sync * 2.0f);
 
   glEnable(GL_BLEND);
-  col3(0.12f * shine, 0.35f * shine, 0.08f);
-  glBegin(GL_POLYGON);
-  glVertex2f(x - 1.2f * perspective, y);
-  glVertex2f(x + 1.2f * perspective, y);
-  glVertex2f(x + sway, y + h);
-  glEnd();
+  /* stalk with subtle gradient */
+  for (float yy = 0; yy < h; yy += 0.8f)
+  {
+    float t = yy / h;
+    float w = (1.4f - t * 0.6f) * perspective;
+    float g = (0.34f + 0.22f * (1 - t)) * shine;
+    float r = (0.10f + 0.05f * (1 - t)) * shine;
+    col3(r, g, 0.08f * shine);
+    dda(x + sway * t - w, y + yy, x + sway * t + w, y + yy);
+  }
+  /* leaf blades */
+  col3(0.10f * shine, 0.40f * shine, 0.08f);
+  dda(x, y + h * 0.45f, x - 14 * perspective + sway * 0.5f, y + h * 0.30f);
+  dda(x, y + h * 0.55f, x + 16 * perspective + sway * 0.6f, y + h * 0.40f);
+  col3(0.14f * shine, 0.52f * shine, 0.10f);
+  dda(x, y + h * 0.62f, x - 10 * perspective + sway * 0.7f, y + h * 0.50f);
+  dda(x, y + h * 0.70f, x + 12 * perspective + sway * 0.8f, y + h * 0.56f);
+  /* highlight edge */
+  col3(0.22f * shine, 0.68f * shine, 0.16f * shine);
+  dda(x + sway * 0.95f, y + h, x + sway * 0.35f, y + h * 0.55f);
 
   float cobX = x + sway + 1.5f;
   float cobY = y + h * 0.5f;
   col3(0.95f * shine, 0.75f * shine, 0.1f);
   fc(cobX, cobY, 4.5f * perspective);
+  /* tassel */
+  col3(0.72f, 0.62f, 0.28f);
+  for (int i = 0; i < 4; i++)
+    dda(x + sway, y + h - 4, x + sway + (i - 1.5f) * 3.0f * perspective, y + h + 10 + i * 2);
   glDisable(GL_BLEND);
 }
 

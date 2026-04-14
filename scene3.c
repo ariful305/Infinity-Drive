@@ -400,34 +400,325 @@ void fluffyCloud(float x, float y, float s)
   fc(x + s * 0.1f, y + s * 0.52f, s * 0.32f);
 }
 
+/* ── Rural assets ──────────────────────────────────────────────── */
+static void palmTree(float x, float by, float h)
+{
+  /* trunk (slight curve) */
+  for (float yy = 0; yy < h; yy += 0.5f)
+  {
+    float t = yy / h;
+    float bend = sinf(t * 2.0f) * 6.0f;
+    float hw = 3.8f - t * 1.4f;
+    float sh = 0.55f + 0.25f * (1 - t);
+    col3(0.40f * sh, 0.26f * sh, 0.12f * sh);
+    dda(x + bend - hw, by + yy, x + bend + hw, by + yy);
+    /* ring texture */
+    if (fmodf(yy, 10.0f) < 0.7f)
+    {
+      col3(0.30f, 0.19f, 0.09f);
+      dda(x + bend - hw, by + yy, x + bend + hw, by + yy);
+    }
+  }
+  float topx = x + sinf(2.0f) * 6.0f;
+  float ty = by + h;
+  /* fronds */
+  for (int i = 0; i < 7; i++)
+  {
+    float ang = (-70 + i * 20) * 3.14159f / 180.0f;
+    float len = 55 + (i % 2) * 10;
+    float ex = topx + len * cosf(ang);
+    float ey = ty + len * sinf(ang);
+    /* frond midrib */
+    col3(0.06f, 0.36f, 0.10f);
+    dda(topx, ty, ex, ey);
+    /* frond blades with highlight */
+    col3(0.12f, 0.55f, 0.16f);
+    for (float s = 10; s < len; s += 8)
+    {
+      float px = topx + s * cosf(ang);
+      float py = ty + s * sinf(ang);
+      dda(px, py, px + 10 * cosf(ang + 0.9f), py + 10 * sinf(ang + 0.9f));
+      dda(px, py, px + 10 * cosf(ang - 0.9f), py + 10 * sinf(ang - 0.9f));
+    }
+    col3(0.20f, 0.72f, 0.22f);
+    dda(topx + 4 * cosf(ang + 0.2f), ty + 4 * sinf(ang + 0.2f), ex, ey);
+  }
+  /* coconuts */
+  col3(0.28f, 0.18f, 0.08f);
+  fc(topx - 6, ty - 6, 4);
+  fc(topx + 6, ty - 8, 3.6f);
+}
+
+static void riceField(float x0, float y0, float w, float h)
+{
+  /* watery field base */
+  for (float yy = y0; yy < y0 + h; yy += 0.5f)
+  {
+    float t = (yy - y0) / h;
+    col3(lp(0.12f, 0.08f, t), lp(0.38f, 0.22f, t), lp(0.18f, 0.14f, t));
+    dda(x0, yy, x0 + w, yy);
+  }
+  /* rice rows (perspective: denser higher) */
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  for (int row = 0; row < 16; row++)
+  {
+    float t = row / 15.0f;
+    float yy = y0 + t * h;
+    float a = 0.10f + (1 - t) * 0.10f;
+    glColor4f(0.12f, 0.60f, 0.16f, a);
+    for (float xx = x0 + 6; xx < x0 + w - 6; xx += lp(10.0f, 18.0f, t))
+      dda(xx, yy, xx + 2, yy + lp(10.0f, 18.0f, 1 - t));
+  }
+  glDisable(GL_BLEND);
+  /* water sheen streaks */
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  for (int i = 0; i < 18; i++)
+  {
+    float xx = x0 + 10 + i * (w / 18.0f) + sinf(T * 0.2f + i) * 3;
+    float yy = y0 + 8 + (i % 6) * 8;
+    glColor4f(0.9f, 0.95f, 1.0f, 0.06f);
+    dda(xx, yy, xx + 26, yy);
+  }
+  glDisable(GL_BLEND);
+}
+
+static void pond(float cx, float cy, float rx, float ry)
+{
+  /* soft shore */
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  for (float r = 0; r < 18; r += 1.5f)
+  {
+    float a = (18 - r) / 18.0f * 0.16f;
+    glColor4f(0.10f, 0.40f, 0.10f, a);
+    mca(cx, cy, rx + r);
+  }
+  glDisable(GL_BLEND);
+  /* water body */
+  for (float y = -ry; y <= ry; y += 0.7f)
+  {
+    float t = (y + ry) / (2 * ry);
+    float hw = rx * sqrtf(fmaxf(0.0f, 1.0f - (y * y) / (ry * ry)));
+    col3(lp(0.10f, 0.08f, t), lp(0.35f, 0.48f, t), lp(0.55f, 0.72f, t));
+    dda(cx - hw, cy + y, cx + hw, cy + y);
+  }
+  /* ripples + surface shimmer (waves) */
+  col3(0.75f, 0.90f, 0.95f);
+  for (int i = 0; i < 7; i++)
+  {
+    float r = 10 + i * 9 + fmodf(T * 10.0f, 9.0f);
+    mca(cx + 10, cy - 5, r);
+  }
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  for (int i = 0; i < 10; i++)
+  {
+    float px = cx - rx + 8 + i * (2 * rx - 16) / 9.0f;
+    float py = cy - 8 + sinf(T * 1.6f + i) * 2.2f;
+    glColor4f(0.95f, 0.98f, 1.0f, 0.10f);
+    dda(px, py, px + 22, py);
+  }
+  glDisable(GL_BLEND);
+}
+
+static void mudHouse(float x, float y, float w, float h)
+{
+  /* yard shadow */
+  col3(0.10f, 0.08f, 0.05f);
+  fillRect(x - 4, y - 4, w + 8, 8);
+  /* walls */
+  for (float yy = y; yy < y + h; yy += 0.5f)
+  {
+    float t = (yy - y) / h;
+    col3(lp(0.62f, 0.72f, t), lp(0.50f, 0.60f, t), lp(0.34f, 0.42f, t));
+    dda(x, yy, x + w, yy);
+  }
+  /* tin roof */
+  glBegin(GL_TRIANGLES);
+  col3(0.45f, 0.50f, 0.55f);
+  glVertex2f(x - 10, y + h);
+  glVertex2f(x + w + 10, y + h);
+  col3(0.28f, 0.32f, 0.36f);
+  glVertex2f(x + w * 0.55f, y + h + h * 0.52f);
+  glEnd();
+  col3(0.65f, 0.70f, 0.75f);
+  for (float i = 0; i < w + 20; i += 10)
+    dda(x - 10 + i, y + h + 2, x - 10 + i - 12, y + h + h * 0.50f - 4);
+  /* door */
+  col3(0.26f, 0.16f, 0.08f);
+  fillRect(x + w * 0.42f, y, w * 0.16f, h * 0.55f);
+  /* bamboo window */
+  col3(0.30f, 0.22f, 0.10f);
+  fillRect(x + w * 0.12f, y + h * 0.35f, w * 0.18f, h * 0.18f);
+  col3(0.20f, 0.14f, 0.07f);
+  dda(x + w * 0.12f, y + h * 0.44f, x + w * 0.30f, y + h * 0.44f);
+  dda(x + w * 0.21f, y + h * 0.35f, x + w * 0.21f, y + h * 0.53f);
+}
+
+static void bambooFence(float x, float y, float len)
+{
+  col3(0.62f, 0.52f, 0.22f);
+  fillRect(x, y + 6, len, 4);
+  col3(0.52f, 0.44f, 0.18f);
+  fillRect(x, y + 13, len, 3);
+  for (float px = x; px < x + len; px += 18)
+  {
+    col3(0.60f, 0.50f, 0.20f);
+    fillRect(px - 1, y - 2, 3, 22);
+    col3(0.45f, 0.36f, 0.14f);
+    dda(px - 1, y + 10, px + 2, y + 10);
+  }
+}
+
+static void cow(float x, float y, float s)
+{
+  /* body */
+  col3(0.86f, 0.84f, 0.80f);
+  glBegin(GL_POLYGON);
+  glVertex2f(x - 22 * s, y + 10 * s);
+  glVertex2f(x + 22 * s, y + 10 * s);
+  glVertex2f(x + 26 * s, y + 2 * s);
+  glVertex2f(x + 18 * s, y - 8 * s);
+  glVertex2f(x - 20 * s, y - 8 * s);
+  glVertex2f(x - 28 * s, y + 2 * s);
+  glEnd();
+  /* patches */
+  col3(0.18f, 0.16f, 0.14f);
+  fc(x - 6 * s, y + 4 * s, 7 * s);
+  fc(x + 10 * s, y - 1 * s, 6 * s);
+  /* head */
+  col3(0.82f, 0.80f, 0.76f);
+  fc(x + 30 * s, y + 2 * s, 7 * s);
+  /* legs */
+  col3(0.22f, 0.20f, 0.18f);
+  for (int i = -1; i <= 2; i++)
+    fillRect(x - 12 * s + i * 10 * s, y - 18 * s, 3 * s, 11 * s);
+  /* tail */
+  col3(0.25f, 0.22f, 0.18f);
+  dda(x - 26 * s, y + 6 * s, x - 36 * s, y + 14 * s);
+}
+
+static void chicken(float x, float y, float s)
+{
+  col3(0.92f, 0.90f, 0.86f);
+  fc(x, y, 4.5f * s);
+  fc(x + 5.5f * s, y + 1.5f * s, 3.0f * s);
+  col3(0.85f, 0.18f, 0.10f);
+  fc(x + 7.8f * s, y + 2.8f * s, 1.0f * s);
+  col3(0.95f, 0.75f, 0.15f);
+  dda(x + 8.2f * s, y + 1.4f * s, x + 11.0f * s, y + 0.6f * s);
+  col3(0.20f, 0.18f, 0.16f);
+  dda(x - 1.0f * s, y - 4.8f * s, x - 2.0f * s, y - 7.5f * s);
+  dda(x + 1.0f * s, y - 4.8f * s, x + 2.0f * s, y - 7.5f * s);
+}
+
+static void sheep(float x, float y, float s)
+{
+  /* wool body */
+  col3(0.92f, 0.92f, 0.90f);
+  fc(x, y, 10 * s);
+  fc(x - 8 * s, y + 5 * s, 7 * s);
+  fc(x + 8 * s, y + 4 * s, 7 * s);
+  /* head */
+  col3(0.28f, 0.22f, 0.18f);
+  fc(x + 14 * s, y + 2 * s, 5.5f * s);
+  /* legs */
+  col3(0.18f, 0.16f, 0.14f);
+  fillRect(x - 8 * s, y - 14 * s, 2.2f * s, 10 * s);
+  fillRect(x - 2 * s, y - 14 * s, 2.2f * s, 10 * s);
+  fillRect(x + 4 * s, y - 14 * s, 2.2f * s, 10 * s);
+  fillRect(x + 10 * s, y - 14 * s, 2.2f * s, 10 * s);
+  /* ear + face highlight */
+  col3(0.34f, 0.28f, 0.24f);
+  fc(x + 17 * s, y + 5 * s, 1.4f * s);
+  col3(0.78f, 0.74f, 0.70f);
+  fc(x + 15 * s, y + 1 * s, 1.0f * s);
+}
+
 void scene3()
 {
-  /* Sky & Atmosphere (Static) */
-  Stop sky3[] = {{0.0f, 0.42f, 0.72f, 0.96f}, {0.55f, 0.65f, 0.85f, 0.98f}, {1.0f, 0.90f, 0.95f, 1.0f}};
+  /* Sky & Atmosphere (soft late-afternoon) */
+  Stop sky3[] = {{0.0f, 0.30f, 0.62f, 0.92f}, {0.55f, 0.68f, 0.84f, 0.96f}, {1.0f, 0.98f, 0.90f, 0.78f}};
   skyGrad(sky3, 3);
 
-  glow(680, 560, 30, 90, 1.0f, 0.92f, 0.45f);
-  col3(1.0f, 0.97f, 0.72f); fc(680, 560, 26);
+  glow(690, 545, 30, 120, 1.0f, 0.78f, 0.32f);
+  glow(690, 545, 26, 70, 1.0f, 0.88f, 0.45f);
+  col3(1.0f, 0.92f, 0.62f); fc(690, 545, 24);
   fluffyCloud(90, 510, 24);
   fluffyCloud(340, 535, 19);
+  fluffyCloud(560, 520, 22);
 
-  /* Background Scenery (Static) */
-  for (float yy = 0; yy < 225; yy += 0.5f) {
-    float t = yy / 225.0f;
-    col3(lp(0.12f, 0.20f, t), lp(0.45f, 0.58f, t), lp(0.10f, 0.14f, t));
+  /* Distant tree-line / haze behind village */
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  for (float yy = 360; yy < 430; yy += 1.0f)
+  {
+    float t = (yy - 360) / 70.0f;
+    glColor4f(lp(0.14f, 0.42f, t), lp(0.34f, 0.58f, t), lp(0.16f, 0.26f, t), 0.12f * (1 - t));
+    dda(0, yy, W, yy);
+  }
+  glDisable(GL_BLEND);
+  col3(0.08f, 0.36f, 0.12f);
+  for (int i = 0; i < 9; i++)
+  {
+    float x = i * 92.0f + 35 + sinf(i * 1.3f) * 7;
+    fc(x, 366 + (i % 3) * 6, 34 + (i % 2) * 6);
+  }
+
+  /* Rice fields (lush) */
+  riceField(0, 222, W, 155);
+
+  /* irrigation pond (kept calm and readable) */
+  pond(620, 300, 68, 32);
+  /* sheep by the pond */
+  sheep(560, 286, 0.95f);
+
+  /* dirt path through fields (subtle) */
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glBegin(GL_POLYGON);
+  glColor4f(0.44f, 0.34f, 0.20f, 0.70f);
+  glVertex2f(330, 222);
+  glVertex2f(370, 222);
+  glColor4f(0.55f, 0.44f, 0.28f, 0.55f);
+  glVertex2f(480, 380);
+  glVertex2f(430, 380);
+  glEnd();
+  glDisable(GL_BLEND);
+
+  /* village ground strip so houses sit naturally on the field edge */
+  for (float yy = 222; yy < 252; yy += 0.5f)
+  {
+    float t = (yy - 222) / 30.0f;
+    col3(lp(0.16f, 0.20f, t), lp(0.44f, 0.52f, t), lp(0.14f, 0.16f, t));
     dda(0, yy, W, yy);
   }
 
-  // Houses and Trees are now at fixed positions
+  /* Houses + yards + bamboo fence (simplified composition) */
   initSmoke();
-  cottage3(50,  222, 110, 100, 0.76f, 0.70f, 0.60f, 0.50f, 0.20f, 0.16f, 110);
-  realTree(180, 222, 90);
+  mudHouse(90, 242, 96, 70);
+  bambooFence(60, 232, 180);
+  cottage3(300, 232, 132, 104, 0.74f, 0.72f, 0.64f, 0.30f, 0.42f, 0.22f, 390);
+  bambooFence(270, 226, 210);
 
-  cottage3(300, 222, 118, 104, 0.68f, 0.74f, 0.62f, 0.22f, 0.45f, 0.20f, 380);
-  realTree(450, 222, 110);
+  /* Coconut/palm trees */
+  palmTree(170, 238, 190);
+  palmTree(520, 232, 205);
+  palmTree(720, 232, 190);
+  realTree(455, 232, 110);
 
-  cottage3(600, 222, 100, 92, 0.70f, 0.74f, 0.64f, 0.26f, 0.42f, 0.22f, 660);
-  windmill3(750, 222, T * 40.0f);
+  /* Far windmill for depth */
+  windmill3(745, 232, T * 40.0f);
+
+  /* Village life (kept minimal + readable) */
+  /* (removed extra mid-ground people + cycle to avoid clutter) */
+
+  /* Animals */
+  cow(560, 292, 0.95f);
+  chicken(160, 250, 1.0f);
+  chicken(182, 252, 0.9f);
 
   /* Road (match Scene 1 geometry: same extents + markings) */
   /* base asphalt */

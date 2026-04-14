@@ -218,6 +218,10 @@ void drawPerson(float x, float y, float shR, float shG, float shB)
   col3(shR * 0.60f, shG * 0.60f, shB * 0.60f);
   dda(x, y + 2, x - 8, y - 14 + sw * 0.35f);
   dda(x, y + 2, x + 8, y - 14 - sw * 0.35f);
+  /* feet */
+  col3(0.10f, 0.10f, 0.11f);
+  dda(x - 10, y - 14 + sw * 0.35f, x - 5, y - 14 + sw * 0.35f);
+  dda(x + 10, y - 14 - sw * 0.35f, x + 5, y - 14 - sw * 0.35f);
 
   /* torso */
   for (float yy = y + 2; yy <= y + 22; yy += 0.5f)
@@ -230,6 +234,9 @@ void drawPerson(float x, float y, float shR, float shG, float shB)
   }
   col3(shR * 0.55f, shG * 0.55f, shB * 0.55f);
   dda(x - 3, y + 14, x + 3, y + 14); /* subtle waist crease */
+  /* shirt highlight */
+  col3(cl(shR + 0.10f), cl(shG + 0.10f), cl(shB + 0.10f));
+  dda(x - 2, y + 20, x + 2, y + 20);
 
   /* arms */
   col3(shR * 0.78f, shG * 0.78f, shB * 0.78f);
