@@ -128,6 +128,24 @@ make run
 Scenes also auto-advance every **12 seconds** with a smooth fade transition.
 
 ---
+## Screenshots
+
+### Scene 1
+![Screenshot 2](https://i.ibb.co.com/DDjftbK9/Screenshot-2026-04-15-at-2-23-10-AM.png)
+
+### Scene 2
+![Screenshot 1](https://i.ibb.co.com/ycfkpFZ8/Screenshot-2026-04-15-at-2-23-19-AM.png)
+
+### Scene 3
+![Screenshot 3](https://i.ibb.co.com/WWS718jQ/Screenshot-2026-04-15-at-2-23-28-AM.png)
+
+### Scene 4
+![Screenshot 4](https://i.ibb.co.com/VWkNJjJB/Screenshot-2026-04-15-at-2-23-36-AM.png)
+
+### Scene 5
+![Screenshot 5](https://i.ibb.co.com/xq73SmHm/Screenshot-2026-04-15-at-2-23-44-AM.png)
+
+---
 
 ## 📁 Project Structure
 
