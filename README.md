@@ -252,6 +252,6 @@ See the LICENSE file for details.
 
 ## 📄 Project Report
 
-👉 [View Full Project Report](https://docs.google.com/document/d/15-YwEHvGnoZN0SNYa5NyCrwIxd6Qcm5bN-rq8xWScRg/edit?usp=sharing)
+👉 [View Full Project Report](https://drive.google.com/file/d/1PtIq5OXG_xh2dTb8Zz__UWo28oBafinR/view?usp=sharing)
 
 ---
