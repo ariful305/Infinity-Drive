@@ -77,131 +77,91 @@ void realisticPine(float x, float by, float h, float fogT)
 
 void scene2()
 {
-  /* ── Multi-stop dawn sky ── */
-  Stop sky2[] = {{0.0f, 0.02f, 0.01f, 0.12f}, {0.25f, 0.06f, 0.04f, 0.22f}, {0.45f, 0.28f, 0.10f, 0.22f}, {0.60f, 0.68f, 0.35f, 0.15f}, {0.72f, 0.88f, 0.62f, 0.18f}, {0.85f, 0.95f, 0.82f, 0.52f}, {1.0f, 0.98f, 0.92f, 0.75f}};
-  skyGrad(sky2, 7);
+    /* ── REFINED DAWN SKY ── */
+    // Added deeper oranges and soft teals for a more realistic pre-sunrise transition
+    Stop sky2[] = {
+        {0.00f, 0.05f, 0.02f, 0.15f}, // Deep Navy Top
+        {0.30f, 0.12f, 0.08f, 0.28f}, // Muted Purple
+        {0.55f, 0.35f, 0.15f, 0.25f}, // Burning Orange Horizon
+        {0.75f, 0.92f, 0.58f, 0.35f}, // Soft Gold
+        {1.00f, 0.98f, 0.92f, 0.85f}  // Near-Sun Brilliance
+    };
+    skyGrad(sky2, 5);
 
-  /* sun */
-  float sx = c2sx, sy = c2sy;
-  /* chromatic halo layers */
-  glow(sx, sy, 30, 120, 1.0f, 0.65f, 0.15f);
-  glow(sx, sy, 25, 60, 1.0f, 0.82f, 0.28f);
-  col3(1.0f, 0.97f, 0.70f);
-  fc(sx, sy, 28);
-  /* limb darkening */
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  for (float r = 22; r < 29; r++)
-  {
-    float a = (r - 22) / 7.0f * 0.5f;
-    glColor4f(0.95f, 0.55f, 0.05f, a);
-    mca(sx, sy, r);
-  }
-  glDisable(GL_BLEND);
 
-  /* god rays */
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  for (int ray = 0; ray < 10; ray++)
-  {
-    float ang = (-28 + ray * 6.0f) * 3.14159f / 180.0f;
-    for (float len = 0; len < 300; len += 4)
+
+    /* ── MOUNTAIN RANGES ── */
+    float fogr = 0.82f, fogg = 0.78f, fogb = 0.85f;
+
+    // Far Mountains: Deeply recessed into the atmosphere
+    mtnFill(0, 185, 410, 390, 295, 0.3f, 0.25f, 0.45f, fogr, fogg, fogb, 310);
+    mtnFill(170, 405, 455, 620, 295, 0.25f, 0.22f, 0.42f, fogr, fogg, fogb, 310);
+    mtnFill(400, 610, 430, 800, 295, 0.32f, 0.28f, 0.48f, fogr, fogg, fogb, 310);
+    snowCap(185, 410, 45);
+    snowCap(405, 455, 42);
+    snowCap(610, 430, 38);
+
+    // Mid Mountains: Sharper detail, warmer "alpenglow" tint
+    mtnFill(40, 250, 365, 500, 295, 0.45f, 0.38f, 0.55f, fogr, fogg, fogb, 305);
+    mtnFill(260, 505, 385, 760, 295, 0.42f, 0.35f, 0.52f, fogr, fogg, fogb, 305);
+    snowCap(250, 365, 32);
+    snowCap(505, 385, 30);
+
+    /* ── VOLUMETRIC VALLEY MIST ── */
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    for (float yy = 290; yy < 325; yy += 0.8f)
     {
-      float a = (1 - len / 300.0f) * 0.035f;
-      float rx = sx + len * cosf(ang), ry = sy + len * sinf(ang);
-      if (rx >= 0 && rx < W && ry >= 0 && ry < H)
-      {
-        glColor4f(1.0f, 0.85f, 0.4f, a);
-        fc(rx, ry, 2);
-      }
+        float t = (yy - 290) / 35.0f;
+        float a = sinf(t * 3.14f) * 0.45f; // Peaks in the middle of the band
+        glColor4f(0.92f, 0.90f, 0.95f, a);
+        dda(0, yy, W, yy);
     }
-  }
-  glDisable(GL_BLEND);
+    glDisable(GL_BLEND);
 
-  /* distant haze band at horizon */
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  for (float yy = 270; yy < 310; yy += 1)
-  {
-    float a = (1 - fabsf(yy - 290) / 20) * 0.32f;
-    glColor4f(0.88f, 0.78f, 0.68f, a);
-    dda(0, yy, W, yy);
-  }
-  glDisable(GL_BLEND);
+    /* ── PINE TREES (FOG-ADAPTIVE) ── */
+    float txL[] = {45, 120, 195, 270}, txR[] = {565, 640, 715, 790};
+    for (int i = 0; i < 4; i++)
+    {
+        float ph = 115 - i * 15.0f; // Varied heights
+        float fd = cl(i / 4.0f) * 0.6f;
+        realisticPine(txL[i], 295, ph, fd);
+        realisticPine(txR[i], 295, ph, fd);
+    }
 
-  float fogr = 0.80f, fogg = 0.72f, fogb = 0.80f;
-  /* far mountains — heavily fogged, very cool */
-  mtnFill(0, 185, 398, 390, 295, 0.32f, 0.26f, 0.42f, fogr, fogg, fogb, 320);
-  mtnFill(170, 405, 445, 620, 295, 0.28f, 0.22f, 0.38f, fogr, fogg, fogb, 320);
-  mtnFill(400, 610, 420, 800, 295, 0.34f, 0.28f, 0.44f, fogr, fogg, fogb, 320);
-  snowCap(185, 398, 40);
-  snowCap(405, 445, 38);
-  snowCap(610, 420, 35);
+    /* ── GRASS ── */
+    col3(0.12f, 0.35f, 0.15f);
+    for (int i = 0; i < 24; i++)
+    {
+        float gx = i * 35.0f + (rand() % 10);
+        float gy = 295 + sinf(i * 1.8f) * 6;
+        dda(gx, gy, gx + 2, gy + 10); // More vertical tufts
+        dda(gx + 4, gy, gx + 1, gy + 11);
+    }
 
-  /* mid mountains — warmer, less fog */
-  mtnFill(40, 250, 350, 500, 295, 0.40f, 0.34f, 0.50f, fogr, fogg, fogb, 310);
-  mtnFill(260, 500, 375, 760, 295, 0.36f, 0.30f, 0.46f, fogr, fogg, fogb, 310);
-  snowCap(250, 350, 30);
-  snowCap(500, 375, 28);
+    /* ── CANONICAL FOREGROUND (ROAD/CARS/PERSON) ── */
+    // Keep road and car logic exactly as provided for consistency
+    for (float yy = 0; yy < 222; yy += 0.5f) {
+        float t = yy / 222.0f;
+        col3(0.11f + t * 0.03f, 0.11f + t * 0.03f, 0.15f + t * 0.04f);
+        dda(0, yy, W, yy);
+    }
+    for (float yy = 55; yy < 168; yy += 0.5f) {
+        float t = (yy - 55) / 113.0f;
+        col3(0.14f + t * 0.02f, 0.14f + t * 0.02f, 0.18f + t * 0.02f);
+        dda(0, yy, W, yy);
+    }
+    col3(0.48f, 0.48f, 0.52f); dda(0, 55, W, 55); dda(0, 167, W, 167);
+    col3(0.60f, 0.60f, 0.65f); dda(0, 56, W, 56); dda(0, 168, W, 168);
+    for (int i = 0; i < 14; i++) {
+        float dx = i * 60.0f;
+        glow(dx + 18, 111, 0, 12, 0.75f, 0.65f, 0.0f);
+        col3(0.78f, 0.68f, 0.02f);
+        dda(dx, 111, dx + 36, 111);
+    }
 
-  /* valley mist */
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  for (float yy = 288; yy < 318; yy += 1)
-  {
-    float a = (yy - 288) / 30.0f * 0.48f;
-    glColor4f(0.88f, 0.84f, 0.90f, a);
-    dda(0, yy, W, yy);
-  }
-  glDisable(GL_BLEND);
-
-  /* 8 pine trees with atmospheric depth */
-  float txL[] = {50, 115, 188, 262}, txR[] = {572, 645, 718, 785};
-  for (int i = 0; i < 4; i++)
-  {
-    float ph = 105 - i * 13.0f, fd = cl(i / 4.0f);
-    realisticPine(txL[i], 295, ph, fd * 0.55f);
-    realisticPine(txR[i], 295, ph, fd * 0.55f);
-  }
-
-  /* road-side grass tufts */
-  col3(0.15f, 0.40f, 0.12f);
-  for (int i = 0; i < 18; i++)
-  {
-    float gx = i * 46.0f, gy = 295 + sinf(i * 2.3f) * 8;
-    dda(gx, gy, gx + 3, gy + 8);
-    dda(gx + 5, gy, gx + 2, gy + 9);
-    dda(gx - 3, gy, gx, gy + 7);
-  }
-
-  /* ── Canonical foreground (match Scene 1 placement exactly) ── */
-  for (float yy = 0; yy < 222; yy += 0.5f)
-  {
-    float t = yy / 222.0f;
-    col3(0.11f + t * 0.03f, 0.11f + t * 0.03f, 0.15f + t * 0.04f);
-    dda(0, yy, W, yy);
-  }
-  for (float yy = 55; yy < 168; yy += 0.5f)
-  {
-    float t = (yy - 55) / 113.0f;
-    col3(0.14f + t * 0.02f, 0.14f + t * 0.02f, 0.18f + t * 0.02f);
-    dda(0, yy, W, yy);
-  }
-  col3(0.48f, 0.48f, 0.52f);
-  dda(0, 55, W, 55);
-  dda(0, 167, W, 167);
-  col3(0.60f, 0.60f, 0.65f);
-  dda(0, 56, W, 56);
-  dda(0, 168, W, 168);
-  for (int i = 0; i < 14; i++)
-  {
-    float dx = i * 60.0f;
-    glow(dx + 18, 111, 0, 12, 0.75f, 0.65f, 0.0f);
-    col3(0.78f, 0.68f, 0.02f);
-    dda(dx, 111, dx + 36, 111);
-  }
-  srand(7);
-  realCar(c1a, 72, 0.72f, 0.08f, 0.12f, 1);
-  realCar(c1b, 118, 0.08f, 0.38f, 0.78f, -1);
-  drawPerson(c1p, 182, 0.18f, 0.20f, 0.60f);
+    srand(7);
+    realCar(c1a, 72, 0.72f, 0.08f, 0.12f, 1);
+    realCar(c1b, 118, 0.08f, 0.38f, 0.78f, -1);
+    drawPerson(c1p, 182, 0.18f, 0.20f, 0.60f);
 }
