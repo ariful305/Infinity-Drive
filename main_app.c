@@ -56,17 +56,6 @@ void drawHUD()
   }
 }
 
-void drawFade()
-{
-  if (fadeA <= 0.001f)
-    return;
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  glColor4f(0.0f, 0.0f, 0.0f, fadeA);
-  fillRect(0, 0, W, H);
-  glDisable(GL_BLEND);
-}
-
 /* ══════════════════════════════════════════════════════════════════
    DISPLAY + MAIN LOOP
    ══════════════════════════════════════════════════════════════════ */
@@ -74,9 +63,10 @@ void switchScene(int n)
 {
   scene = (n % N_SCENES + N_SCENES) % N_SCENES;
   sceneTimer = 0;
-  fadIn = 1;
+  /* No black fade — instant cut to the next scene */
+  fadIn = 0;
   fadOut = 0;
-  fadeA = 1.0f;
+  fadeA = 0.0f;
 }
 
 void display()
@@ -102,7 +92,6 @@ void display()
     break;
   }
   drawHUD();
-  drawFade();
   glutSwapBuffers();
 }
 
@@ -111,32 +100,9 @@ void timerCB(int v)
   (void)v;
   float dt = 1.0f / 60.0f;
   T += dt;
-  /* Only one of fade-in / fade-out runs; both at once would cancel and freeze. */
-  if (fadIn)
-  {
-    fadeA -= 0.030f;
-    if (fadeA <= 0)
-    {
-      fadeA = 0;
-      fadIn = 0;
-    }
-  }
-  else if (fadOut)
-  {
-    fadeA += 0.030f;
-    if (fadeA >= 1.0f)
-    {
-      fadeA = 1.0f;
-      fadOut = 0;
-      switchScene(scene + 1);
-    }
-  }
-  else
-  {
-    sceneTimer += dt;
-    if (sceneTimer >= SCENE_DUR)
-      fadOut = 1;
-  }
+  sceneTimer += dt;
+  if (sceneTimer >= SCENE_DUR)
+    switchScene(scene + 1);
   /* scene 1 */
   c1a += 1.5f;
   if (c1a > W + 90)
@@ -205,17 +171,9 @@ void keyboard(unsigned char key, int x, int y)
   if (key == 27)
     exit(0);
   if (key == ' ')
-  {
-    /* Cancel fade-in so fade-out is not fighting fadIn in the same frame. */
-    fadIn = 0;
-    fadOut = 1;
-  }
+    switchScene(scene + 1);
   if (key == 'd' || key == 'D')
-  {
-    /* Abort any outgoing fade-to-next, then go to previous scene with fade-in. */
-    fadOut = 0;
     switchScene(scene - 1);
-  }
 }
 void reshape(int w, int h)
 {

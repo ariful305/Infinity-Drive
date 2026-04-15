@@ -4,8 +4,8 @@ int W = 800, H = 600;
 
 int scene = 0, N_SCENES = 5;
 float sceneTimer = 0, SCENE_DUR = 12.0f;
-float fadeA = 1.0f;
-int fadIn = 1, fadOut = 0;
+float fadeA = 0.0f;
+int fadIn = 0, fadOut = 0;
 float T = 0.0f;
 
 float c1a = 80, c1b = 720, c1p = 60;
