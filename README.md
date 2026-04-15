@@ -247,3 +247,11 @@ See the LICENSE file for details.
 - `code_monolithic_backup.c` is a **single-file reference copy** of the entire program and is **not compiled** by the Makefile. It exists for historical/archival reference only.
 - The project is deliberately self-contained — no external assets, no third-party libraries beyond a standard OpenGL/GLUT installation.
 - On Apple Silicon Macs, the `Makefile` automatically links the `Cocoa` framework, which is required for GLUT windowing on arm64.
+
+---
+
+## 📄 Project Report
+
+👉 [View Full Project Report](https://docs.google.com/document/d/15-YwEHvGnoZN0SNYa5NyCrwIxd6Qcm5bN-rq8xWScRg/edit?usp=sharing)
+
+---
