@@ -75,6 +75,33 @@ void realisticPine(float x, float by, float h, float fogT)
   }
 }
 
+/* ── Birds (scene-local to avoid cross-scene linker conflicts) ── */
+static void scene2_drawRealisticBird(float bx, float by, float base_scale, float flap_phase)
+{
+  float wing_flap = sinf(T * 5.0f + flap_phase) * 12.0f;
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glColor4f(0.05f, 0.05f, 0.05f, 0.9f);
+  glBegin(GL_POLYGON); /* Wing curve */
+  glVertex2f(bx, by);
+  glVertex2f(bx - 18 * base_scale, by + wing_flap);
+  glVertex2f(bx, by + 3);
+  glVertex2f(bx + 18 * base_scale, by + wing_flap);
+  glEnd();
+  fc(bx, by + 1, 3 * base_scale);
+  glDisable(GL_BLEND);
+}
+
+static void scene2_drawRealisticBirdFlock(float cx, float cy)
+{
+  for (int i = 0; i < 7; i++)
+  {
+    float offsetX = i * 35.0f;
+    float offsetY = (i % 2 == 0 ? 1 : -1) * (i * 15.0f);
+    scene2_drawRealisticBird(cx - offsetX, cy + offsetY, 1.0f - (i * 0.05f), i * 0.4f);
+  }
+}
+
 void scene2()
 {
     /* ── REFINED DAWN SKY ── */
@@ -87,6 +114,16 @@ void scene2()
         {1.00f, 0.98f, 0.92f, 0.85f}  // Near-Sun Brilliance
     };
     skyGrad(sky2, 5);
+
+    /* ── SUN (like Scene 4) ── */
+    glow(W * 0.82f, H * 0.78f, 40, 120, 1.0f, 0.7f, 0.3f);
+    col3(1.0f, 0.95f, 0.8f);
+    fc(W * 0.82f, H * 0.78f, 35);
+
+    /* ── BIRDS (like Scene 4) ── */
+    float flockX = fmodf((T + 10.0f) * 45.0f, W + 600) - 200;
+    float flockY = H * 0.82f + sinf(T * 0.5f) * 20.0f;
+    scene2_drawRealisticBirdFlock(flockX, flockY);
 
 
 
